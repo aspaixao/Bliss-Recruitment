@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Bliss Recruitment</string>
+
+    <!--Splash screem -->
+    <string name="recruit">Alexandre Paixão</string>
+    <string name="tryagain">Retry Action</string>
+    <string name="failservice">Houston, we have a problem!</string>
+
+    <!--Menu-->
+    <string name="titleSearch">Search</string>
+    <string name="hintSearch">search</string>
+
+    <!-- Details screem-->
+    <string name="titleDetail">Question</string>
+    <string name="titleChoise">Choices</string>
+    <string name="transImage"></string>
+
+    <!--Custom Dialog-->
+    <string name="hintEmail">Email to send</string>
+    <string name="sharingList">Sharing list</string>
+    <string name="sharingQuestion">Sharing question</string>
+</resources>
