@@ -91,4 +91,13 @@
 
     </android.support.v4.widget.NestedScrollView>
 
+    <ProgressBar
+        android:id="@+id/progressBar1"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:visibility="visible" />
+
 </android.support.design.widget.CoordinatorLayout>

@@ -75,7 +75,7 @@ class AdpQuestionsVH extends RecyclerView.ViewHolder {
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listener.onClickListener(item);
+                listener.onClickListener(item, imgThumbs);
             }
         });
     }

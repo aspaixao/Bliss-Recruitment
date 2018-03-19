@@ -18,13 +18,6 @@ public class App extends Application {
     public App() {
     }
 
-    public static boolean isIsConnected() {
-        return isConnected;
-    }
-    public static void setIsConnected(boolean isConnected) {
-        App.isConnected = isConnected;
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
