@@ -6,12 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
-import android.os.Handler;
 import android.os.Bundle;
 import android.view.Window;
 
 import blissapplication.com.blissrecruitment.R;
-import blissapplication.com.blissrecruitment.util.ConnectivityReceiver;
 import blissapplication.com.blissrecruitment.util.ConnectivityVerify;
 
 public class FailConnectionActivity extends Activity {

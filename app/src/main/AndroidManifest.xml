@@ -28,16 +28,6 @@
         <activity android:name=".ui.DetailsActivity"></activity>
         <activity android:name=".ui.FailConnectionActivity"></activity>
 
-        <receiver
-            android:name=".util.ConnectivityReceiver"
-            android:enabled="true">
-            <intent-filter>
-                <action
-                    android:name="android.net.conn.CONNECTIVITY_CHANGE"
-                    tools:ignore="BatteryLife" />
-            </intent-filter>
-        </receiver>
-
     </application>
 
 </manifest>

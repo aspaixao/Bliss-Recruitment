@@ -8,8 +8,6 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
-import android.net.Uri;
-import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -21,17 +19,16 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import blissapplication.com.blissrecruitment.R;
 import blissapplication.com.blissrecruitment.adapter.AdpRecChoices;
-import blissapplication.com.blissrecruitment.adapter.AdpRecQuestions;
 import blissapplication.com.blissrecruitment.interfaces.IBlissService;
 import blissapplication.com.blissrecruitment.interfaces.IRecyclerOnClickListener;
 import blissapplication.com.blissrecruitment.model.Choice;
@@ -39,7 +36,6 @@ import blissapplication.com.blissrecruitment.model.Health;
 import blissapplication.com.blissrecruitment.model.Question;
 import blissapplication.com.blissrecruitment.model.Share;
 import blissapplication.com.blissrecruitment.util.App;
-import blissapplication.com.blissrecruitment.util.ConnectivityReceiver;
 import blissapplication.com.blissrecruitment.util.ConnectivityVerify;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -55,6 +51,8 @@ public class DetailsActivity extends AppCompatActivity implements IRecyclerOnCli
     RecyclerView rcvChoices;
     FloatingActionButton btnShare;
     Dialog dialog;
+    private ProgressBar loading;
+
     int questionId;
 
     @Override
@@ -67,6 +65,7 @@ public class DetailsActivity extends AppCompatActivity implements IRecyclerOnCli
     }
 
     private void init() {
+        loading = (ProgressBar)findViewById(R.id.progressBar1);
         dialog = new Dialog(this);
         txtQuestion = findViewById(R.id.tvQuestion);
         imgQuestion = findViewById(R.id.ivTitle);
@@ -91,6 +90,7 @@ public class DetailsActivity extends AppCompatActivity implements IRecyclerOnCli
     }
 
     private void getQuestion(int id) {
+        loading.setVisibility(View.VISIBLE);
 
         Call<Question> questionCall = blissService.getQuestion(id);
 
@@ -103,8 +103,11 @@ public class DetailsActivity extends AppCompatActivity implements IRecyclerOnCli
                     questionId = question.getId();
 
                     showDetails(question);
+
                 } else {
                     Log.e(App.TAG, "Error: " + response.code());
+                    loading.setVisibility(View.GONE);
+                    Toast.makeText(DetailsActivity.this, "Fail to load this question, please try again!", Toast.LENGTH_SHORT).show();
                     finish();
                 }
             }
@@ -112,6 +115,8 @@ public class DetailsActivity extends AppCompatActivity implements IRecyclerOnCli
             @Override
             public void onFailure(Call<Question> call, Throwable t) {
                 Log.e(App.TAG, "Error: " + t);
+                loading.setVisibility(View.GONE);
+                Toast.makeText(DetailsActivity.this, "Fail to load this question, please try again!", Toast.LENGTH_SHORT).show();
                 finish();
             }
         });
@@ -135,6 +140,7 @@ public class DetailsActivity extends AppCompatActivity implements IRecyclerOnCli
             }
 
         }
+        loading.setVisibility(View.GONE);
 
     }
 
@@ -148,13 +154,13 @@ public class DetailsActivity extends AppCompatActivity implements IRecyclerOnCli
     }
 
     @Override
-    public void onClickListener(Question item) {
+    public void onClickListener(Question item, View view) {
 
     }
 
     @Override
     public void onClickListenerChoice(Choice item) {
-
+        loading.setVisibility(View.VISIBLE);
         Call<Question> question = blissService.putQuestion(questionId);
 
         question.enqueue(new Callback<Question>() {
@@ -166,11 +172,13 @@ public class DetailsActivity extends AppCompatActivity implements IRecyclerOnCli
                     List<Choice> cs = question.getChoices();
                     showChoices(cs, true);
                     Toast.makeText(DetailsActivity.this, "Thank you for your vote!", Toast.LENGTH_SHORT).show();
+                    loading.setVisibility(View.GONE);
                 }
             }
 
             @Override
             public void onFailure(Call<Question> call, Throwable t) {
+                loading.setVisibility(View.GONE);
                 Log.e(App.TAG,"Error: " + t);
                 Toast.makeText(DetailsActivity.this, "Error in your vote, please try again.", Toast.LENGTH_SHORT).show();
             }

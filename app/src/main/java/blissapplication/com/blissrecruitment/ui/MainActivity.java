@@ -10,8 +10,11 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -39,8 +42,8 @@ import blissapplication.com.blissrecruitment.model.Health;
 import blissapplication.com.blissrecruitment.model.Question;
 import blissapplication.com.blissrecruitment.model.Share;
 import blissapplication.com.blissrecruitment.util.App;
-import blissapplication.com.blissrecruitment.util.ConnectivityReceiver;
 import blissapplication.com.blissrecruitment.util.ConnectivityVerify;
+import blissapplication.com.blissrecruitment.util.PaginationScrollListenter;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -52,7 +55,15 @@ public class MainActivity extends AppCompatActivity implements IRecyclerOnClickL
     FloatingActionButton btnShare;
     SearchView searchView;
 
+    LinearLayoutManager linearLayoutManager;
+
     Dialog dialog;
+
+    private static final int PAGE_START = 1;
+    private boolean isLoading = false;
+    private boolean isLastPage = false;
+    private int TOTAL_PAGES = 99;
+    private int currentPage = PAGE_START;
 
     private IBlissService blissService = App.getBlissService().getBlissService();
 
@@ -68,6 +79,9 @@ public class MainActivity extends AppCompatActivity implements IRecyclerOnClickL
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         rcvQuestions = (RecyclerView) findViewById(R.id.recycleQuestions);
         btnShare = (FloatingActionButton) findViewById(R.id.fbShare);
+
+        linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL
+                ,false);
 
         dialog = new Dialog(this);
 
@@ -168,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements IRecyclerOnClickL
     private void execSearch(String q) {
         loading.setVisibility(View.VISIBLE);
         try {
-            Call<List<Question>> questions = blissService.getQuestions(10,0,"");
+            Call<List<Question>> questions = blissService.getQuestions(App.TOTAL_ITEM_LIST,0,"");
 
             questions.enqueue(new Callback<List<Question>>() {
                 @Override
@@ -203,12 +217,42 @@ public class MainActivity extends AppCompatActivity implements IRecyclerOnClickL
         if (qs != null) {
 
             try {
-                rcvQuestions.setAdapter(new AdpRecQuestions(MainActivity.this, qs,this));
+                rcvQuestions.setAdapter(new AdpRecQuestions(MainActivity.this, qs
+                        ,this));
 
-                RecyclerView.LayoutManager layout = new LinearLayoutManager(this,
-                        LinearLayoutManager.VERTICAL, false);
-                rcvQuestions.setLayoutManager(layout);
+//                RecyclerView.LayoutManager layout = new LinearLayoutManager(this,
+//                        LinearLayoutManager.VERTICAL, false);
 
+                rcvQuestions.setLayoutManager(linearLayoutManager);
+                rcvQuestions.setItemAnimator(new DefaultItemAnimator());
+
+                rcvQuestions.addOnScrollListener(
+                        new PaginationScrollListenter(linearLayoutManager) {
+                    @Override
+                    protected void loadMoreItems() {
+                        isLoading = true;
+                        currentPage +=1;
+
+                       // new Handler().postDelayed(() -> {loadNextPage();}, 1000);
+                    }
+
+                    @Override
+                    public int getTotalPageCount() {
+                        return TOTAL_PAGES;
+                    }
+
+                    @Override
+                    public boolean isLastPage() {
+                        return isLastPage;
+                    }
+
+                    @Override
+                    public boolean isLoading() {
+                        return isLoading;
+                    }
+                });
+
+                loadFirstPage();
 
             } catch (Exception e) {
                 Log.e(App.TAG, "Error: " + e.getMessage(), e);
@@ -224,16 +268,47 @@ public class MainActivity extends AppCompatActivity implements IRecyclerOnClickL
     }
 
     @Override
-    public void onClickListener(Question item) {
+    public void onClickListener(Question item, View view) {
         loading.setVisibility(View.VISIBLE);
         Intent i = new Intent(MainActivity.this, DetailsActivity.class);
         i.putExtra("ID", item.getId());
-        startActivity(i);
+
+        ActivityOptionsCompat optionsCompat =
+                ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this
+                        , view,"ivThumb");
+
+        startActivity(i, optionsCompat.toBundle());
+//        startActivity(i);
         //Toast.makeText(this, "Click on list: " + String.valueOf(item.getId()), Toast.LENGTH_LONG).show();
     }
     @Override
     public void onClickListenerChoice(Choice item) {
 
+    }
+
+    private void loadFirstPage() {
+        Call<List<Question>> questions = blissService.getQuestions(App.TOTAL_ITEM_LIST,0,"");
+
+        questions.enqueue(new Callback<List<Question>>() {
+            @Override
+            public void onResponse(Call<List<Question>> call, Response<List<Question>> response) {
+                if (response.isSuccessful()) {
+                    List<Question> qs = response.body();
+                    loading.setVisibility(View.GONE);
+                    updateList(qs);
+
+                } else {
+                    Log.e(App.TAG, "Error: " + response.body());
+                    loading.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Question>> call, Throwable t) {
+                Log.e(App.TAG, "Error: " + t);
+                loading.setVisibility(View.GONE);
+            }
+        });
     }
 
     @Override
@@ -244,7 +319,7 @@ public class MainActivity extends AppCompatActivity implements IRecyclerOnClickL
 
     @Override
     protected void onPostResume() {
-        super.onResume();
+        super.onPostResume();
         this.registerReceiver(mBroadcastReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
     }
