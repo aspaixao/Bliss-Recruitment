@@ -1,10 +1,10 @@
 # Bliss Recruitment
 
-This application is for available to opportunity Android Developer jr
+This application is for evaluation to Android Developer jr position.
 
 ## Getting Started
 
-This application have a Splash screem, List and details.
+This application have a Splash screem, List and details. 
 
 ### Prerequisites
 
