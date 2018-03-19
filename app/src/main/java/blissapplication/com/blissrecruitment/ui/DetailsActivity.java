@@ -13,7 +13,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -44,7 +46,7 @@ import retrofit2.Response;
 public class DetailsActivity extends AppCompatActivity implements IRecyclerOnClickListener{
 
     IBlissService blissService = App.getBlissService().getBlissService();
-
+    private Toolbar mToolbar;
     TextView txtQuestion;
     ImageView imgQuestion;
 
@@ -65,6 +67,16 @@ public class DetailsActivity extends AppCompatActivity implements IRecyclerOnCli
     }
 
     private void init() {
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+
+        try {
+            setSupportActionBar(mToolbar);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeButtonEnabled(true);
+        } catch (Exception e) {
+            Log.e(App.TAG, "Error: " + e.getMessage());
+                }
+
         loading = (ProgressBar)findViewById(R.id.progressBar1);
         dialog = new Dialog(this);
         txtQuestion = findViewById(R.id.tvQuestion);
@@ -151,6 +163,21 @@ public class DetailsActivity extends AppCompatActivity implements IRecyclerOnCli
         List<Choice> cs = q.getChoices();
         showChoices(cs, false);
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+
+            case android.R.id.home:
+                finish();
+                break;
+
+            default:break;
+        }
+
+        return true;
     }
 
     @Override
